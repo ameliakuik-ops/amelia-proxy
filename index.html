@@ -434,7 +434,7 @@ function CheckSquare(p) {
   return React.createElement(Icon, p, React.createElement("polyline", {
     points: "9 11 12 14 22 4"
   }), React.createElement("path", {
-    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
   }));
 }
 function ShoppingCart(p) {
@@ -1767,14 +1767,46 @@ function TaskRow(props) {
     }
   })));
 }
+function useLocalStorage(key, defaultVal) {
+  var stored = null;
+  try {
+    var item = localStorage.getItem(key);
+    if (item !== null) stored = JSON.parse(item);
+  } catch (e) {}
+  var [val, setVal] = useState(stored !== null ? stored : defaultVal);
+  function setAndStore(newVal) {
+    var resolved = typeof newVal === "function" ? newVal(val) : newVal;
+    setVal(resolved);
+    try {
+      localStorage.setItem(key, JSON.stringify(resolved));
+    } catch (e) {}
+  }
+  return [val, setAndStore];
+}
 function App() {
   var [tab, setTab] = useState("briefing");
   var [cmd, setCmd] = useState("");
   var [alerts, setAlerts] = useState([]);
   var [chat, setChat] = useState([]);
   var [busy, setBusy] = useState(false);
-  var [tasks, setTasks] = useState(INIT_TASKS);
-  var [groceries, setGroceries] = useState(["Milk", "Bread", "Eggs", "Apples"]);
+  var [tasks, setTasks] = useLocalStorage("amelia_tasks", INIT_TASKS);
+  var [groceries, setGroceries] = useLocalStorage("amelia_groceries", ["Milk", "Bread", "Eggs", "Apples"]);
+  var [journalEntries, setJournalEntries] = useLocalStorage("amelia_journal", []);
+  var [savedQuotes, setSavedQuotes] = useLocalStorage("amelia_quotes", []);
+  var [birthDetails, setBirthDetails] = useLocalStorage("amelia_birth", {
+    name: "",
+    date: "",
+    time: "",
+    place: ""
+  });
+  var [birthSaved, setBirthSaved] = useLocalStorage("amelia_birthsaved", false);
+  var [familyPhotos, setFamilyPhotos] = useLocalStorage("amelia_photos", {
+    Jaynen: null,
+    Kaydee: null,
+    Hubby: null,
+    Mom: null,
+    Dad: null
+  });
   var [newItem, setNewItem] = useState("");
   var [calFilter, setCalFilter] = useState("All");
   var [calView, setCalView] = useState("month");
@@ -1808,7 +1840,6 @@ function App() {
   var [familyFilter, setFamilyFilter] = useState("All");
   var [typing, setTyping] = useState(false);
   var [aiBarOpen, setAiBarOpen] = useState(false);
-  var [journalEntries, setJournalEntries] = useState([]);
   var [journalInput, setJournalInput] = useState("");
   var [journalPrompt, setJournalPrompt] = useState(null);
   var [journalView, setJournalView] = useState("write");
@@ -1817,13 +1848,6 @@ function App() {
   var [editingText, setEditingText] = useState("");
   var [mysticPeriod, setMysticPeriod] = useState("daily");
   var [innerSubTab, setInnerSubTab] = useState("mystic");
-  var [birthDetails, setBirthDetails] = useState({
-    name: "",
-    date: "",
-    time: "",
-    place: ""
-  });
-  var [birthSaved, setBirthSaved] = useState(false);
   var [readings, setReadings] = useState({});
   var [readingBusy, setReadingBusy] = useState(false);
   var [retailNews, setRetailNews] = useState([]);
@@ -1833,15 +1857,7 @@ function App() {
   var [expandedNews, setExpandedNews] = useState(null);
   var [newsArticles, setNewsArticles] = useState({});
   var [newsLoading, setNewsLoading] = useState(null);
-  var [familyPhotos, setFamilyPhotos] = useState({
-    Jaynen: null,
-    Kaydee: null,
-    Hubby: null,
-    Mom: null,
-    Dad: null
-  });
   var [quoteIndex, setQuoteIndex] = useState(0);
-  var [savedQuotes, setSavedQuotes] = useState([]);
   var [showSaved, setShowSaved] = useState(false);
   var [aiQuote, setAiQuote] = useState(null);
   var [aiQuoteLoading, setAiQuoteLoading] = useState(false);

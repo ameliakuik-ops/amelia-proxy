@@ -434,7 +434,7 @@ function CheckSquare(p) {
   return React.createElement(Icon, p, React.createElement("polyline", {
     points: "9 11 12 14 22 4"
   }), React.createElement("path", {
-    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
   }));
 }
 function ShoppingCart(p) {
@@ -1894,7 +1894,7 @@ function App() {
           "anthropic-dangerous-direct-browser-access": "true"
         },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 80,
           system: "Personal assistant. 2 short sentences for Amelia who feels " + mood + ". Tone: " + tone + ". Start '" + gr + ", Amelia.' One key thing to focus on. No bullet points. Keep it brief.",
           messages: [{
@@ -1948,7 +1948,7 @@ function App() {
           "anthropic-dangerous-direct-browser-access": "true"
         },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 80,
           system: "Personal assistant. 2 short sentences EOD for Amelia. Start 'Good evening, Amelia.' One win from today, one thing to release. Brief and warm.",
           messages: [{
@@ -2004,7 +2004,7 @@ function App() {
           "anthropic-dangerous-direct-browser-access": "true"
         },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 240,
           system: "Personal assistant. 2 short sentences for Amelia's week ahead. Start 'Here is your week, Amelia.' One key thing to prepare for. Brief and warm.",
           messages: [{
@@ -2045,7 +2045,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1000,
         system: 'You are a luxury retail analyst covering global markets, India, Southeast Asia and ANZ. Today is ' + dateStr + '. Use web search to find REAL current news. Then return a JSON array ONLY - no other text, no markdown. Format: [{"id":"r1","bold":true,"tag":"Global","text":"one sentence with real fact"}]. Tags: Global, Trend, or My Markets (My Markets = India, SEA, ANZ). Include: 2 Global (major worldwide luxury or LVMH/competitor news), 1 Trend (emerging strategy or cultural moment), 3 My Markets items. bold:true for breaking/major news. Each text is one punchy factual sentence. Use real brand names, real figures, real events found via search.',
         messages: [{
@@ -2139,7 +2139,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 150,
         system: "Personal assistant for Amelia. Given a task, write 2-3 concise practical next steps. Plain text, newlines between points, no bullet symbols.",
         messages: [{
@@ -2185,7 +2185,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 400,
         system: 'Assistant for Amelia. Kid tasks non-negotiable. Return ONLY valid JSON: {"keep":[{"id":1,"reason":"short"}],"postpone":[{"id":2,"reason":"short","when":"specific"}]}',
         messages: [{
@@ -2252,7 +2252,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 400,
         system: "Luxury retail analyst. Write 3-4 sentences about this news: what happened, why it matters, impact on digital luxury in South Asia and SEA.",
         messages: [{
@@ -2295,7 +2295,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 400,
         system: "Skilled astrologer and numerologist. Warm, personal, insightful. Speak directly to the person.",
         messages: [{
@@ -2360,7 +2360,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 300,
         system: "Personal assistant for Amelia. Family: Jaynen (son, 9), Kaydee (daughter, 6.5), Hubby. Works in LV South Asia digital. Mood: " + (mood || "good") + ", tone: " + tone + ". Today calendar: " + todayAll + ". This week: " + weekAll + ". Work tasks: " + workList + ". Personal tasks: " + personal + ". Answer from this context first. 2 sentences max.",
         messages: [{
@@ -2425,7 +2425,7 @@ function App() {
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 120,
         system: 'Wisdom curator. Return ONLY valid JSON, no markdown. Format: {"text":"quote","author":"Name"}. Give a profound lesser-known philosophical wisdom quote. Vary: Stoics, Eastern, poets, scientists.',
         messages: [{

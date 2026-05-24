@@ -14,6 +14,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('Request body:', JSON.stringify(req.body).slice(0, 200));
+    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -24,10 +26,13 @@ export default async function handler(req, res) {
       body: JSON.stringify(req.body)
     });
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
+    const text = await response.text();
+    console.log('Anthropic response status:', response.status);
+    console.log('Anthropic response:', text.slice(0, 300));
+    
+    return res.status(response.status).json(JSON.parse(text));
   } catch (error) {
-    console.error('Proxy error:', error);
+    console.error('Proxy error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }

@@ -461,7 +461,7 @@ function Sparkles(p) {
   return React.createElement(Icon, p, React.createElement("path", {
     d: "M12 3l1.5 4.5H18l-3.75 2.7 1.5 4.5L12 12l-3.75 2.7 1.5-4.5L6 7.5h4.5z"
   }), React.createElement("path", {
-    d: "M5 3l.75 2.25H8l-1.875 1.35.75 2.25L5 7.5l-1.875 1.35.75-2.25L16 15.25h2.25z"
+    d: "M5 3l.75 2.25H8l-1.875 1.35.75 2.25L5 7.5l-1.875 1.35.75-2.25L2 5.25h2.25z"
   }), React.createElement("path", {
     d: "M19 13l.75 2.25H22l-1.875 1.35.75 2.25L19 17.5l-1.875 1.35.75-2.25L16 15.25h2.25z"
   }));
@@ -2047,10 +2047,6 @@ function App() {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
-        tools: [{
-          type: "web_search_20250305",
-          name: "web_search"
-        }],
         system: 'You are a luxury retail analyst covering global markets, India, Southeast Asia and ANZ. Today is ' + dateStr + '. Use web search to find REAL current news. Then return a JSON array ONLY - no other text, no markdown. Format: [{"id":"r1","bold":true,"tag":"Global","text":"one sentence with real fact"}]. Tags: Global, Trend, or My Markets (My Markets = India, SEA, ANZ). Include: 2 Global (major worldwide luxury or LVMH/competitor news), 1 Trend (emerging strategy or cultural moment), 3 My Markets items. bold:true for breaking/major news. Each text is one punchy factual sentence. Use real brand names, real figures, real events found via search.',
         messages: [{
           role: "user",
@@ -2258,14 +2254,10 @@ function App() {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 400,
-        tools: [{
-          type: "web_search_20250305",
-          name: "web_search"
-        }],
-        system: "Luxury retail analyst. Search for more details on this story, then write 3-4 sentences: what happened, why it matters, impact on digital luxury in South Asia and SEA. Use real facts.",
+        system: "Luxury retail industry analyst. Given a headline, write 3-4 sentences: what happened, why it matters, impact on digital luxury in South Asia and SEA markets.",
         messages: [{
           role: "user",
-          content: "Find details and expand: \"" + item.text + "\""
+          content: "Expand on this news: \"" + item.text + "\""
         }]
       })
     }).then(function (r) {

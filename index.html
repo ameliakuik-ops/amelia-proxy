@@ -1857,13 +1857,73 @@ function App() {
   var [expandedNews, setExpandedNews] = useState(null);
   var [newsArticles, setNewsArticles] = useState({});
   var [newsLoading, setNewsLoading] = useState(null);
-  var [quoteIndex, setQuoteIndex] = useState(0);
+  var [googleToken, setGoogleToken] = useLocalStorage("amelia_gtoken", null);
+  var [calEvents, setCalEvents] = useState(CAL_EVENTS);
+  var [calSynced, setCalSynced] = useState(false);
   var [showSaved, setShowSaved] = useState(false);
   var [aiQuote, setAiQuote] = useState(null);
   var [aiQuoteLoading, setAiQuoteLoading] = useState(false);
   var inputRef = useRef(null);
   var bottomRef = useRef(null);
   var recognRef = useRef(null);
+  useEffect(function () {
+    // Check URL for Google OAuth token
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get("access_token");
+    var refresh = params.get("refresh_token");
+    if (token) {
+      setGoogleToken({
+        access: token,
+        refresh: refresh,
+        saved: new Date().toISOString()
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+      fetchGoogleCalendar(token);
+    } else if (googleToken && googleToken.access) {
+      fetchGoogleCalendar(googleToken.access);
+    }
+  }, []);
+  function fetchGoogleCalendar(token) {
+    fetch("https://amelia-proxy.vercel.app/api/calendar", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    }).then(function (r) {
+      return r.json();
+    }).then(function (data) {
+      if (data.items && data.items.length > 0) {
+        var mapped = data.items.map(function (item, i) {
+          var start = item.start.dateTime || item.start.date;
+          var end = item.end ? item.end.dateTime || item.end.date : null;
+          var startDate = new Date(start);
+          var isAllDay = !item.start.dateTime;
+          var timeStr = isAllDay ? "All Day" : startDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+          var endStr = end && item.end.dateTime ? new Date(end).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          }) : null;
+          return {
+            id: i + 1,
+            title: item.summary || "Untitled",
+            date: startDate,
+            time: timeStr,
+            end: endStr,
+            calendar: item.organizer ? item.organizer.displayName || "Calendar" : "Calendar",
+            color: T.rose,
+            kid: null,
+            hubby: false
+          };
+        });
+        setCalEvents(mapped);
+        setCalSynced(true);
+      }
+    }).catch(function (e) {
+      console.log("Calendar fetch error:", e);
+    });
+  }
   useEffect(function () {
     setTimeout(function () {
       setReady(true);
@@ -1874,6 +1934,24 @@ function App() {
       behavior: "smooth"
     });
   }, [chat]);
+  useEffect(function () {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get("access_token");
+      var refresh = params.get("refresh_token");
+      if (token) {
+        setGoogleToken({
+          access: token,
+          refresh: refresh,
+          saved: new Date().toISOString()
+        });
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setCalSynced(true);
+      } else if (googleToken && googleToken.access) {
+        setCalSynced(true);
+      }
+    } catch (e) {}
+  }, []);
   useEffect(function () {
     if (!mood) return;
     var today = new Date().toDateString();
@@ -1886,12 +1964,12 @@ function App() {
       return m.value === mood;
     });
     var tone = moodObj ? moodObj.tone : "warm";
-    var workEvts = CAL_EVENTS.filter(function (e) {
+    var workEvts = calEvents.filter(function (e) {
       return isToday(e.date) && !e.kid && !e.hubby;
     }).map(function (e) {
       return e.title + " " + e.time;
     }).join(", ") || "none";
-    var kidEvts = CAL_EVENTS.filter(function (e) {
+    var kidEvts = calEvents.filter(function (e) {
       return isToday(e.date) && e.kid;
     }).map(function (e) {
       return e.title + " " + e.time;
@@ -1952,7 +2030,7 @@ function App() {
         return;
       }
       setEodLoading(true);
-      var todayEvts = CAL_EVENTS.filter(function (e) {
+      var todayEvts = calEvents.filter(function (e) {
         return isToday(e.date);
       }).map(function (e) {
         return e.title;
@@ -2004,7 +2082,7 @@ function App() {
         return;
       }
       setSundayLoading(true);
-      var week = CAL_EVENTS.filter(function (e) {
+      var week = calEvents.filter(function (e) {
         var d = daysUntil(e.date);
         return d >= 0 && d <= 7;
       }).sort(function (a, b) {
@@ -2189,7 +2267,7 @@ function App() {
         cat: t.cat
       };
     }));
-    var todayEvts = CAL_EVENTS.filter(function (e) {
+    var todayEvts = calEvents.filter(function (e) {
       return isToday(e.date);
     }).map(function (e) {
       return e.title + " " + e.time;
@@ -2358,12 +2436,12 @@ function App() {
     }).map(function (t) {
       return t.title;
     }).join("; ") || "none";
-    var todayAll = CAL_EVENTS.filter(function (e) {
+    var todayAll = calEvents.filter(function (e) {
       return isToday(e.date);
     }).map(function (e) {
       return (e.kid ? e.kid + ": " : e.hubby ? "Hubby: " : "") + e.title + " at " + e.time;
     }).join("; ") || "nothing today";
-    var weekAll = CAL_EVENTS.filter(function (e) {
+    var weekAll = calEvents.filter(function (e) {
       var d = daysUntil(e.date);
       return d >= 0 && d <= 7;
     }).map(function (e) {
@@ -2563,7 +2641,7 @@ function App() {
   var personalTasks = tasks.filter(function (t) {
     return t.cat === "personal";
   });
-  var sortedUpcoming = CAL_EVENTS.filter(function (e) {
+  var sortedUpcoming = calEvents.filter(function (e) {
     return !isToday(e.date);
   }).sort(function (a, b) {
     return new Date(a.date) - new Date(b.date);
@@ -2573,12 +2651,12 @@ function App() {
   });
   var nowH = new Date().getHours();
   var showEod = nowH >= 19 && nowH <= 23;
-  var calendars = ["All"].concat(CAL_EVENTS.map(function (e) {
+  var calendars = ["All"].concat(calEvents.map(function (e) {
     return e.calendar;
   }).filter(function (v, i, a) {
     return a.indexOf(v) === i;
   }));
-  var filteredEvts = CAL_EVENTS.filter(function (e) {
+  var filteredEvts = calEvents.filter(function (e) {
     return calFilter === "All" || e.calendar === calFilter;
   });
   var grouped = filteredEvts.reduce(function (acc, e) {
@@ -2587,7 +2665,7 @@ function App() {
     acc[k].push(e);
     return acc;
   }, {});
-  var familyToday = CAL_EVENTS.filter(function (e) {
+  var familyToday = calEvents.filter(function (e) {
     if (!isToday(e.date)) return false;
     if (familyFilter === "All") return e.kid || e.hubby;
     if (familyFilter === "Jaynen") return e.kid === "Jaynen";
@@ -2597,7 +2675,7 @@ function App() {
   });
   function eventsOnDay(d) {
     if (!d) return [];
-    return CAL_EVENTS.filter(function (e) {
+    return calEvents.filter(function (e) {
       return (calFilter === "All" || e.calendar === calFilter) && sameDay(e.date, d);
     });
   }
@@ -3564,7 +3642,14 @@ function App() {
       color: T.plum,
       fontWeight: "600"
     }
-  }, "Amelia"))), currentMood && /*#__PURE__*/React.createElement("button", {
+  }, "Amelia"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-end",
+      gap: 6
+    }
+  }, currentMood && /*#__PURE__*/React.createElement("button", {
     onClick: function () {
       setMoodDone(false);
     },
@@ -3588,7 +3673,25 @@ function App() {
       color: currentMood.color,
       fontWeight: "600"
     }
-  }, currentMood.label))), !showEod && /*#__PURE__*/React.createElement(BriefCard, {
+  }, currentMood.label)), !googleToken ? /*#__PURE__*/React.createElement("a", {
+    href: "https://amelia-proxy.vercel.app/api/auth",
+    style: {
+      fontSize: 10,
+      color: T.olive,
+      background: T.olive + "14",
+      border: "1px solid " + T.olive + "35",
+      borderRadius: 8,
+      padding: "4px 10px",
+      textDecoration: "none",
+      fontWeight: "600"
+    }
+  }, "+ Sync Google Calendar") : /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: T.mint,
+      fontWeight: "600"
+    }
+  }, calSynced ? "Calendar synced" : "Calendar connected"))), !showEod && /*#__PURE__*/React.createElement(BriefCard, {
     color: T.olive,
     label: "AI Briefing",
     loading: briefLoading,
@@ -3784,14 +3887,14 @@ function App() {
   }))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CLabel, {
     text: "Today on Calendar",
     color: T.rose
-  }), CAL_EVENTS.filter(function (e) {
+  }), calEvents.filter(function (e) {
     return isToday(e.date) && !e.kid && !e.hubby;
   }).length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 14,
       color: T.muted
     }
-  }, "Nothing else scheduled") : CAL_EVENTS.filter(function (e) {
+  }, "Nothing else scheduled") : calEvents.filter(function (e) {
     return isToday(e.date) && !e.kid && !e.hubby;
   }).map(function (e, i) {
     return /*#__PURE__*/React.createElement("div", {

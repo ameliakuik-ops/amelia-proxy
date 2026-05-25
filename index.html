@@ -1883,6 +1883,74 @@ function App() {
       fetchGoogleCalendar(googleToken.access);
     }
   }, []);
+  function tagCalEvent(title) {
+    var t = title.toLowerCase();
+    var hasKaydee = t.indexOf("kaydee") !== -1;
+    var hasJaynen = t.indexOf("jaynen") !== -1;
+    var hasHubby = t.indexOf("hubby") !== -1;
+
+    // Name in title takes highest priority
+    if (hasKaydee && hasJaynen) return {
+      kid: "Kaydee",
+      hubby: false,
+      multi: true
+    };
+    if (hasKaydee) return {
+      kid: "Kaydee",
+      hubby: false
+    };
+    if (hasJaynen) return {
+      kid: "Jaynen",
+      hubby: false
+    };
+    if (hasHubby) return {
+      kid: null,
+      hubby: true
+    };
+
+    // Then keyword matching
+    var KAYDEE_KEYS = ["ballet"];
+    var JAYNEN_KEYS = ["sdr", "hockey", "coding", "das", "swimsafer", "swim safer"];
+    var BOTH_KEYS = ["pro-teach", "pro teach", "proteach"];
+    var HUBBY_KEYS = ["counselling", "counseling"];
+    var EXAM_KEYS = ["exam"];
+    for (var i = 0; i < BOTH_KEYS.length; i++) {
+      if (t.indexOf(BOTH_KEYS[i]) !== -1) return {
+        kid: "Kaydee",
+        hubby: false,
+        multi: true
+      };
+    }
+    for (var i = 0; i < KAYDEE_KEYS.length; i++) {
+      if (t.indexOf(KAYDEE_KEYS[i]) !== -1) return {
+        kid: "Kaydee",
+        hubby: false
+      };
+    }
+    for (var i = 0; i < JAYNEN_KEYS.length; i++) {
+      if (t.indexOf(JAYNEN_KEYS[i]) !== -1) return {
+        kid: "Jaynen",
+        hubby: false
+      };
+    }
+    // Exam defaults to Jaynen unless name is specified above
+    for (var i = 0; i < EXAM_KEYS.length; i++) {
+      if (t.indexOf(EXAM_KEYS[i]) !== -1) return {
+        kid: "Jaynen",
+        hubby: false
+      };
+    }
+    for (var i = 0; i < HUBBY_KEYS.length; i++) {
+      if (t.indexOf(HUBBY_KEYS[i]) !== -1) return {
+        kid: null,
+        hubby: true
+      };
+    }
+    return {
+      kid: null,
+      hubby: false
+    };
+  }
   function fetchGoogleCalendar(token) {
     fetch("https://amelia-proxy.vercel.app/api/calendar", {
       headers: {
@@ -1905,16 +1973,19 @@ function App() {
             hour: "2-digit",
             minute: "2-digit"
           }) : null;
+          var title = item.summary || "Untitled";
+          var tag = tagCalEvent(title);
+          var col = tag.kid === "Kaydee" ? T.plum : tag.kid === "Jaynen" ? T.olive : tag.hubby ? T.rust : T.rose;
           return {
             id: i + 1,
-            title: item.summary || "Untitled",
+            title: title,
             date: startDate,
             time: timeStr,
             end: endStr,
-            calendar: item.organizer ? item.organizer.displayName || "Calendar" : "Calendar",
-            color: T.rose,
-            kid: null,
-            hubby: false
+            calendar: item._calendarName || (item.organizer ? item.organizer.displayName || "Calendar" : "Calendar"),
+            color: col,
+            kid: tag.kid,
+            hubby: tag.hubby
           };
         });
         setCalEvents(mapped);
